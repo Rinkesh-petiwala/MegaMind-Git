@@ -1,0 +1,206 @@
+﻿
+<link rel="stylesheet" type="text/css" href="" />
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="text-center">
+    <h1 class="display-4">Student Form</h1>
+</div>
+<div class="book-example panel panel-primary">
+    <!-- <div class="panel-heading panel-head">Student Listing</div> -->
+    <div class="panel-body">
+        @Html.ValidationMessage("Student")
+        <div class="btn-group">
+            <a id="AddStudent" asp-action="AddStudentAsync" asp-controller="Student" class="btn btn-primary"
+               data-toggle="modal" data-target="#myModal" onclick="OpenAddPopup();">
+                <i class="glyphicon glyphicon-plus"></i> Add Create
+            </a>
+        </div>
+        <br />
+        <br />
+        <!-- <label>@ViewBag.CurrentDate</label> -->
+        <table id="CreateList" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0"
+               width="100%" style="margin: 4px">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>State</th>
+                    <th>City</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+        </table>
+
+        <div id="divcontent">
+        </div>
+
+    </div>
+</div>
+@section Scripts{
+
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+    
+
+    <script>
+        $(document).ready(function () {
+           // BindGrid();
+            fetchAndInitializeDataTable();
+
+        });
+        function fetchAndInitializeDataTable() {
+           
+            debugger
+            jQuery.ajax({
+                url: '/Student/StudentList', // Replace with your server-side endpoint URL
+                type: 'GET',
+                success: function (data) {
+                    debugger
+                    // Initialize DataTable with the fetched data
+                    new DataTable('#CreateList', {
+                        destroy: true, // Destroy the existing DataTable if any
+                        data: data.data,
+                        columns: [
+                            { "data": "id", "name": "Id", "autoWidth": true },
+                            { "data": "name", "name": "Name", "autoWidth": true },
+                            { "data": "email", "name": "Email", "autoWidth": true },
+                            { "data": "phone", "name": "Phone", "autoWidth": true },
+                            { "data": "address", "name": "Address", "autoWidth": true },
+                            { "data": "stateName", "name": "StateName", "autoWidth": true },
+                            { "data": "cityName", "name": "CityName", "autoWidth": true },
+                            {
+                                "render": function (data, type, full, meta) { return '<a class="btn btn-info" href="#" onclick="return OpenUpdatePopup(' + full.id + ')">Edit</a>'; }
+                            },
+                            {
+                                data: null, render: function (data, type, row) {
+                                    return "<a href='#' class='btn btn-danger' onclick=DeleteData('" + row.id + "'); >Delete</a>";
+                                }
+                            },
+                        ]
+                    });
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        //function BindGrid() {
+        //    debugger
+        //    $('#CreateList').dataTable({
+        //        "processing": true, // for show progress bar
+        //        "serverSide": true, // for process server side
+        //        "filter": true, // this is for disable filter (search box)
+        //        "orderMulti": false, // for disable multiple column at once
+        //        "pageLength": 5,
+        //        "order": [[0, "desc"]],
+        //        "ajax": {
+        //            "url": "/Student/GetStudentList1",
+        //            "type": "Get"
+
+        //        }, "columns": [
+        //            { "data": "Id", "name": "Id", "autoWidth": true },
+        //            { "data": "Name", "name": "Name", "autoWidth": true },
+        //            { "data": "Email", "name": "Email", "autoWidth": true },
+        //            { "data": "Phone", "name": "Phone", "autoWidth": true },
+        //            { "data": "Address", "name": "Address", "autoWidth": true },
+        //            { "data": "StateName", "name": "StateName", "autoWidth": true },
+        //            { "data": "CityName", "name": "CityName", "autoWidth": true },
+        //            {
+        //                "render": function (data, type, full, meta) { return '<a class="btn btn-info" href="#" onclick="return OpenUpdatePopup(' + full.id + ')">Edit</a>'; }
+        //            },
+        //            {
+        //                data: null, render: function (data, type, row) {
+        //                    return "<a href='#' class='btn btn-danger' onclick=DeleteData('" + row.id + "'); >Delete</a>";
+        //                }
+        //            },
+        //        ],
+        //        "lengthMenu": [[10, 15, 25, 50, 100, 200], [10, 15, 25, 50, 100, 200]]
+        //    });
+        //}
+
+        function OpenAddPopup() {
+            $.ajax({
+                url: '/Student/GetStudentById', // Correct the URL
+                contentType: 'application/html; charset=utf-8',
+                type: 'GET',
+                dataType: 'html',
+                success: function (result) {
+                    $('#divcontent').empty();
+                    $('#divcontent').html(result);
+                    $('#AddUpdateModelPopup').modal('show');
+                },
+                error: function (xhr, status) {
+                    alert(status);
+                }
+            });
+        }
+
+        function OpenUpdatePopup(Id) {
+            debugger
+            $.ajax({
+                url: '/Student/GetStudentById?Id=' + Id, // Correct the URL
+                contentType: 'application/html; charset=utf-8',
+                type: 'GET',
+                dataType: 'html',
+                success: function (result) {
+                    $('#divcontent').empty();
+                    $('#divcontent').html(result);
+                    $('#AddUpdateModelPopup').modal('show');
+                },
+                error: function (xhr, status) {
+                    alert(status);
+                }
+            });
+        }
+
+        function DeleteData(ID) {
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to delete this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Student/DeleteStudent?Id=" + ID,
+                        type: "POST",
+                        contentType: "application/json;charset=UTF-8",
+                        dataType: "json",
+                        success: function (result) {
+                            Swal.fire('Deleted!', 'Your data has been deleted.', 'success')
+                            setTimeout(function () { window.location.href = "/Student/GetStudentList"; }, 2000);
+
+                        },
+                        error: function (errormessage) {
+                            alert(errormessage.responseText);
+                        }
+                    });
+
+                }
+            })
+        }
+    </script>
+    <!-- Add jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Add Bootstrap (JS and CSS) -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+}

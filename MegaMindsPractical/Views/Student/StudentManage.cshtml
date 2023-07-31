@@ -1,0 +1,252 @@
+﻿@model MegaMindsPractical.Models.Student
+
+@{
+    ViewData["Title"] = "Student Register";
+}
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Add jQuery-- >
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" ></script>
+
+<!-- Add Bootstrap (JS and CSS) -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+<div class="modal fade" id="AddUpdateModelPopup" tabindex="-1" role="dialog" aria-labelledby="myModal"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+
+                    @if (Model.Id > 0)
+                    {
+                        <h4 class="modal-title" id="AddUpdateModelLabel">Update Records</h4>
+                    }
+                    else
+                    {
+                        <h4 class="modal-title" id="AddUpdateModelLabel">Add Records</h4>
+                    }
+
+                </div>
+                <div>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                </div>
+
+
+
+            </div>
+            @using (Html.BeginForm(FormMethod.Post, new { enctype = "multipart/form-data", @id = "form1" }))
+            {
+                @Html.ValidationSummary(true)
+                <div class="modal-body">
+
+                    <div class="form-horizontal">
+
+                        @Html.HiddenFor(model => model.Id, new { @id = "hdnID" })
+                        <div class="form-group">
+                            <label asp-for="Name" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Name" class="form-control" id="txtName" />
+                            <span asp-validation-for="Name" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Email" class="form-control" id="txtEmail" />
+                            <span asp-validation-for="Email" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Phone" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Phone" class="form-control" id="txtPhone" />
+                            <span asp-validation-for="Phone" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Address" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Address" class="form-control" id="txtAddress" />
+                            <span asp-validation-for="Address" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="StateId" class="control-label">State</label><span class="text-danger">*</span>
+                            <select asp-for="StateId" class="form-control" id="ddlState"></select><br />
+                            <span asp-validation-for="StateId" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="CityId" class="control-label">City</label><span class="text-danger">*</span>
+                           <select asp-for="CityId" class="form-control" id="ddlCity"></select><br />
+                        
+                            <span asp-validation-for="CityId" data-valmsg-replace="true"
+                                  class="field-validation-error text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Agree?</label><span class="text-danger">*</span>
+                            <input data-val="true" data-val-required="The isAgree field is required." id="isAgree"
+                                   name="isAgree"
+                                   type="checkbox"
+                                   value="true" />
+
+                            <input name="hfisAgree" type="hidden" value="false" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    @if (Model.Id > 0)
+                    {
+                        <input type="submit" value="Update" class="btn btn-primary" id="btnUpdateStudent"
+                               onclick="return AddStudent();" />
+
+                    }
+                    else
+                    {
+                        <input type="submit" value="Add" class="btn btn-primary" id="btnAddStudent"
+                               onclick="return AddStudent();" disabled />
+                       
+                    }
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<script>
+ 
+
+    $(document).ready(function () {
+
+        var ddlState = $('#ddlState');
+        ddlState.append($("<option></option>").val('').html('Please Select State'));
+        $.ajax({
+            url: 'Student/BindStateDetails',
+            type: 'GET',
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, state) {
+                    ddlState.append($("<option></option>").val(state.Id).html(state.StateName));
+                });
+            },
+            error: function () {
+                alert('Error!');
+            }
+        });
+
+        //City details by state id  
+
+        $("#ddlState").change(function () {
+            var StateId = parseInt($("#ddlState").val());
+
+            if (!isNaN(StateId)) {
+                var ddlCity = $('#ddlCity');
+                ddlCity.empty();
+                ddlCity.append($("<option></option>").val('').html('Please wait ...'));
+
+                debugger;
+                $.ajax({
+                    url: 'Student/BindCityDetails',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { StateId: StateId },
+                    success: function (d) {
+
+                        ddlCity.empty(); // Clear the please wait
+                        ddlCity.append($("<option></option>").val('').html('Select City'));
+                        $.each(d, function (i, city) {
+                            ddlCity.append($("<option></option>").val(city.Id).html(city.CityName));
+                        });
+                    },
+                    error: function () {
+                        alert('Error!');
+                    }
+                });
+            }
+
+
+        });
+
+    });
+
+    $('#isAgree').click(function () {
+        if ($(this).is(':checked')) {
+            $('#hfisAgree').val('true');
+            $(':input[type="submit"]').prop('disabled', false);
+        } else {
+            $('#hfisAgree').val('false');
+            $(':input[type="submit"]').prop('disabled', true);
+        }
+    });
+    //Add Data Function
+    function AddStudent() {
+
+        var result = $('#form1').valid();
+        if (!result) {
+            return false;
+        }
+
+        var StudentMstObj = {
+            Id: parseInt($('#hdnID').val()),
+            Name: $('#txtName').val(),
+            Email: $('#txtEmail').val(),
+            Phone: $('#txtPhone').val(),
+            Address: $('#txtAddress').val(),
+            StateId: $('#ddlState').val(),
+            CityId: $('#ddlCity').val(),
+           
+        };
+        $.ajax({
+            url: "/Student/AddEditStudent",
+            data: StudentMstObj,
+            type: "POST",
+            success: function (result) {
+
+                if (result.status == "success") {
+                    Swal.fire({
+
+                                icon: 'success',
+                                title: 'Your work has been saved',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                    // alert("Record is sucessfuly save!");
+                    $('#AddUpdateModelPopup').modal('hide');
+                    setTimeout(function () { window.location.href = "/Student/StudentList"; }, 2000);
+
+                }
+                if (result.status == "Update") {
+                    Swal.fire({
+
+                                icon: 'success',
+                                title: 'Your work has been saved',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                   // alert("Record is sucessfuly update!");
+                    $('#AddUpdateModelPopup').modal('hide');
+                    setTimeout(function () { window.location.href = "/Student/StudentList"; }, 2000);
+
+                }
+                if (result.status == "Dublicate") {
+                    //alert("Create Name is alredy exists!");
+                    Swal.fire('Student Name is alredy exists!')
+                }
+
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+</script>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
